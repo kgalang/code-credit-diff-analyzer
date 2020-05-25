@@ -1,36 +1,36 @@
-enum DiffFileModes {
+pub enum DiffFileModes {
   Delete,
   New,
   Modify,
 }
 
-enum Languages {
+pub enum Languages {
   Python,
   Javascript,
   Go,
   Rust,
 }
 
-enum DiffLineActions {
+pub enum DiffLineActions {
   Insert,
   Delete,
   Context,
 }
 
 pub struct DiffFile {
-  old_name: String,
-  new_name: String,
-  mode: DiffFileModes,
-  added_lines: i32,
-  deleted_lines: i32,
-  is_combined: bool,
-  lang: Languages,
-  hunks: Vec<DiffHunk>
+  pub old_name: String,
+  pub new_name: String,
+  pub mode: DiffFileModes,
+  pub added_lines: i32,
+  pub deleted_lines: i32,
+  pub is_combined: bool,
+  pub lang: Languages,
+  pub hunks: Option<Vec<DiffHunk>>
 }
 
 pub struct DiffHunk {
-  header: String,
-  lines: Vec<DiffLine>
+  pub header: String,
+  pub lines: Vec<DiffLine>
 }
 
 pub struct DiffLine {
