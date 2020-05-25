@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -16,10 +19,12 @@ impl DiffString {
 }
 
 fn main() -> std::io::Result<()> {
-    let diff = DiffString::from_file("./fixtures/large.diff")?;
+    use parser::parser::{parse};
 
-    let mut lines = diff.lines();
+    let diff = DiffString::from_file("./fixtures/rustball.diff")?;
 
-    println!("Lines {:?}", lines.next());
+    let out = parse(diff);
+
+    println!("Lines {:?}", out);
     Ok(())
 }
