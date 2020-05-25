@@ -30,7 +30,6 @@ pub struct DiffFile {
   pub is_combined: bool,
   pub lang: Languages,
   pub hunks: Option<Vec<DiffHunk>>,
-  pub hunk_header: Option<String>,
 }
 
 #[derive(Debug)]
@@ -39,8 +38,17 @@ pub struct DiffHunk {
   pub lines: Vec<DiffLine>
 }
 
+impl DiffHunk {
+  fn new(header: String) -> DiffHunk {
+    DiffHunk {
+      header: header,
+      lines: Vec::new(),
+    }
+  }
+}
+
 #[derive(Debug)]
 pub struct DiffLine {
-  action: DiffLineActions,
-  content: String,
+  pub action: DiffLineActions,
+  pub content: String,
 }
