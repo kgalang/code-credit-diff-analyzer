@@ -1,6 +1,8 @@
 use std::fs::File;
 use std::io::prelude::*;
 
+mod parser;
+
 struct DiffString;
 
 impl DiffString {
@@ -14,7 +16,7 @@ impl DiffString {
 }
 
 fn main() -> std::io::Result<()> {
-    let diff = DiffString::from_file("./fixtures/edit-ws.diff")?;
+    let diff = DiffString::from_file("./fixtures/large.diff")?;
 
     let mut lines = diff.lines();
 
