@@ -1,10 +1,5 @@
-#[macro_use]
-extern crate lazy_static;
-
 use std::fs::File;
 use std::io::prelude::*;
-
-mod parser;
 
 struct DiffString;
 
@@ -19,7 +14,6 @@ impl DiffString {
 }
 
 fn main() -> std::io::Result<()> {
-    use parser::parser::{parse};
     use unidiff::PatchSet;
 
     let diff = DiffString::from_file("./fixtures/rustball.diff")?;
