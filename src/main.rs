@@ -20,11 +20,19 @@ impl DiffString {
 
 fn main() -> std::io::Result<()> {
     use parser::parser::{parse};
+    use unidiff::PatchSet;
 
     let diff = DiffString::from_file("./fixtures/rustball.diff")?;
 
-    let out = parse(diff);
+    // let out = parse(diff);
+    let mut patch = PatchSet::new();
+    patch.parse(diff).ok().expect("Error parsing diff");
 
-    println!("Lines {:?}", out);
+    let mut patchset_iter = patch.into_iter();
+    let mut f = patchset_iter.nth(0).unwrap();
+    let mut h = f.into_iter().nth(0).unwrap();
+    println!("{:?}", h);
+    println!("{:?}", h.into_iter().nth(0).unwrap());
+
     Ok(())
 }

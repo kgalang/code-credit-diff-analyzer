@@ -10,11 +10,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "cfg-if"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
+
+[[package]]
 name = "code-credit-diff-parser"
 version = "0.1.0"
 dependencies = [
  "lazy_static",
  "regex",
+ "unidiff",
+]
+
+[[package]]
+name = "encoding_rs"
+version = "0.8.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e8ac63f94732332f44fe654443c46f6375d1939684c17b0afb6cb56b0456e171"
+dependencies = [
+ "cfg-if",
 ]
 
 [[package]]
@@ -54,4 +70,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d40c6d1b69745a6ec6fb1ca717914848da4b44ae29d9b3080cbee91d72a69b14"
 dependencies = [
  "lazy_static",
+]
+
+[[package]]
+name = "unidiff"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c152966fd1e11a44da1063caf6ca3c615cf5760603223015441df29a9653ae9"
+dependencies = [
+ "encoding_rs",
+ "lazy_static",
+ "regex",
 ]
