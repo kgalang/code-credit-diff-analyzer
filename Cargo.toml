@@ -1,5 +1,5 @@
 [package]
-name = "code-credit-diff-parser"
+name = "code-credit-diff-analyzer"
 version = "0.1.0"
 authors = ["Kevin Galang <kevingalang@protonmail.com>"]
 edition = "2018"
@@ -9,5 +9,5 @@ edition = "2018"
 [dependencies]
 regex = "1"
 lazy_static = "1.4.0"
-unidiff = "0.3"
+unidiff = "0.3.3"
 
