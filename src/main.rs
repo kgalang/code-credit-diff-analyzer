@@ -19,14 +19,18 @@ impl DiffString {
 pub struct HunkStats {
     pub lang: String,
     pub mode: String,
-    pub added_ct: i32,
-    pub removed_ct: i32,
-    pub trimmed_added_ct: i32,
-    pub trimmed_removed_ct: i32,
+    pub added: i32,
+    pub removed: i32,
+    pub cleaned_source: Vec<String>,
 }
 
 #[derive(Debug)]
 pub struct DiffStats(pub Vec<HunkStats>);
+
+fn clean_hunk(hunk: Hunk) -> Hunk{
+    // go through hunk source lines and remove comments here
+    hunk
+}
 
 fn get_hunk_stats(file: &PatchedFile, hunk: &Hunk) {
     let f_ext = Path::new(file.target_file.as_str()).extension().unwrap();
@@ -40,12 +44,13 @@ fn main() -> std::io::Result<()> {
     patch.parse(diff).ok().expect("Error parsing diff");
     let files = patch.files();
     let mut out_stats: Vec<HunkStats> = Vec::new();
+    let mut cleaned_hunks: Vec<Hunk> = Vec::new();
     
+    // trim hunks to remove comments from counting for added or removed properties
     for f in files {
-        println!("f here ------- {:?}", f);
-        for h in f.hunks() {
-            get_hunk_stats(f, h);
-        }
+        let cleaned: Vec<Hunk> = f.clone().into_iter()
+            .map(|h| trim_hunk_lines(h)).collect();
+        cleaned_hunks.extend(cleaned);
     }
 
     Ok(())
