@@ -1,7 +1,22 @@
+#[macro_use]
+extern crate lazy_static;
+
 use std::fs::File;
 use std::io::prelude::*;
-use unidiff::{PatchSet, PatchedFile, Hunk};
+use unidiff::{PatchSet, PatchedFile, Hunk, Line};
 use std::path::Path;
+use std::collections::HashMap;
+
+lazy_static!{
+    static ref LANG_COMMENTS: HashMap<&'static str, &'static str> = {
+        let mut map = HashMap::new();
+        map.insert("py", "#");
+        map.insert("rb", "#");
+        map.insert("js", "//");
+        map.insert("rs", "//");
+        map
+    };
+}
 
 struct DiffString;
 
@@ -27,9 +42,42 @@ pub struct HunkStats {
 #[derive(Debug)]
 pub struct DiffStats(pub Vec<HunkStats>);
 
-fn clean_hunk(hunk: Hunk) -> Hunk{
+fn is_not_comment(line: &Line, f_ext: Option<&str>) -> bool {
+    if f_ext.is_none() || !LANG_COMMENTS.contains_key(f_ext.unwrap()){
+        return true
+    }
+
+    let trimmed_line = line.value.trim_start();
+    let comm_pre = LANG_COMMENTS.get(f_ext.unwrap()).expect("Not in map");
+    let comm_pre_len = comm_pre.len();
+    if trimmed_line.len() < comm_pre_len {
+        return true
+    }
+
+    if &trimmed_line[..comm_pre_len] == *comm_pre {
+        return false
+    } else {
+        return true
+    }
+}
+
+fn clean_hunk(hunk: Hunk, f_ext: Option<&str>) -> Hunk{
     // go through hunk source lines and remove comments here
+    let cleaned_lines: Vec<&Line> = hunk.lines().into_iter()
+        .filter(|l| is_not_comment(*l, f_ext)).collect();
+
+    // print cleaned lines
+    for l in cleaned_lines {
+        println!("{:?}", l.value);
+    }
+
     hunk
+}
+
+fn get_file_ext(file: &PatchedFile) -> Option<&str> {
+    let f_ext = Path::new(file.target_file.as_str())
+        .extension().expect("error getting extension");
+    f_ext.to_str()
 }
 
 fn get_hunk_stats(file: &PatchedFile, hunk: &Hunk) {
@@ -48,8 +96,9 @@ fn main() -> std::io::Result<()> {
     
     // trim hunks to remove comments from counting for added or removed properties
     for f in files {
+        let f_ext = get_file_ext(f);
         let cleaned: Vec<Hunk> = f.clone().into_iter()
-            .map(|h| trim_hunk_lines(h)).collect();
+            .map(|h| clean_hunk(h, f_ext)).collect();
         cleaned_hunks.extend(cleaned);
     }
 
