@@ -156,7 +156,9 @@ index 9f77ab1..d733aea 100644
      pub team_id: Uuid,
  }
  
+
 -#[derive(Debug, Queryable, Identifiable, Associations, AsChangeset)]
++// test comment
 +#[derive(Debug, Queryable, Identifiable, Associations, AsChangeset, Insertable)]
  #[belongs_to(Team)]
  #[table_name = "team_players"]
