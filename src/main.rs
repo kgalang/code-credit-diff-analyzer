@@ -7,13 +7,30 @@ use unidiff::{PatchSet, PatchedFile, Hunk, Line};
 use std::path::Path;
 use std::collections::HashMap;
 
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+pub enum Language {
+    Other,
+    Python,
+    Ruby,
+    Rust,
+    Javascript,
+}
+
 lazy_static!{
-    static ref LANG_COMMENTS: HashMap<&'static str, &'static str> = {
+    static ref LANG_EXT: HashMap<&'static str, Language> = {
         let mut map = HashMap::new();
-        map.insert("py", "#");
-        map.insert("rb", "#");
-        map.insert("js", "//");
-        map.insert("rs", "//");
+        map.insert("py", Language::Python);
+        map.insert("rb", Language::Ruby);
+        map.insert("rs", Language::Rust);
+        map.insert("js", Language::Javascript);
+        map
+    };
+    static ref LANG_COMMENTS: HashMap<Language, &'static str> = {
+        let mut map = HashMap::new();
+        map.insert(Language::Python, "#");
+        map.insert(Language::Ruby, "#");
+        map.insert(Language::Javascript, "//");
+        map.insert(Language::Rust, "//");
         map
     };
 }
@@ -32,23 +49,22 @@ impl DiffString {
 
 #[derive(Debug)]
 pub struct HunkStats {
-    pub lang: String,
-    pub mode: String,
-    pub added: i32,
-    pub removed: i32,
-    pub cleaned_source: Vec<String>,
+    pub lang: Language,
+    pub added: usize,
+    pub removed: usize,
+    pub cleaned_lines: Vec<Line>,
 }
 
 #[derive(Debug)]
 pub struct DiffStats(pub Vec<HunkStats>);
 
-fn is_not_comment(line: &Line, f_ext: Option<&str>) -> bool {
-    if f_ext.is_none() || !LANG_COMMENTS.contains_key(f_ext.unwrap()){
+fn is_not_comment(line: &Line, f_ext: &Language) -> bool {
+    if let Language::Other = f_ext {
         return true
     }
 
     let trimmed_line = line.value.trim_start();
-    let comm_pre = LANG_COMMENTS.get(f_ext.unwrap()).expect("Not in map");
+    let comm_pre = LANG_COMMENTS.get(f_ext).expect("Not in map");
     let comm_pre_len = comm_pre.len();
     if trimmed_line.len() < comm_pre_len {
         return true
@@ -61,8 +77,12 @@ fn is_not_comment(line: &Line, f_ext: Option<&str>) -> bool {
     }
 }
 
-fn clean_hunk(raw_hunk: Hunk, f_ext: Option<&str>) -> Hunk{
+fn clean_hunk(raw_hunk: Hunk, f_ext: &Language) -> Hunk{
     let mut cleaned = Hunk::new(0,0,0,0,"",);
+
+    if let Language::Other = f_ext {
+        return raw_hunk.clone()
+    }
 
     // go through hunk source lines and remove comments here
     let cleaned_lines: Vec<&Line> = raw_hunk.lines().into_iter()
@@ -72,20 +92,32 @@ fn clean_hunk(raw_hunk: Hunk, f_ext: Option<&str>) -> Hunk{
         cleaned.append(l.clone());
     }
 
-    // println!("raw {}", raw_hunk.lines().len());
-    // println!("cleaned {}", cleaned.lines().len());
     cleaned
 }
 
-fn get_file_ext(file: &PatchedFile) -> Option<&str> {
+fn get_file_ext(file: &PatchedFile) -> &Language {
+    let mut lang: &Language;
     let f_ext = Path::new(file.target_file.as_str())
-        .extension().expect("error getting extension");
-    f_ext.to_str()
+        .extension();
+    
+    if f_ext.is_none() || !LANG_EXT.contains_key(f_ext.unwrap().to_str().unwrap()) {
+        lang = &Language::Other;
+    } else {
+        lang = LANG_EXT.get(f_ext.unwrap().to_str().unwrap()).expect("err getting language")
+    }
+
+    lang
 }
 
-fn get_hunk_stats(file: &PatchedFile, hunk: &Hunk) {
-    let f_ext = Path::new(file.target_file.as_str()).extension().unwrap();
-    println!("{:?}", f_ext);
+fn get_hunk_stats(raw_hunk: &Hunk, cleaned_hunk: &Hunk, f_ext: &Language) -> HunkStats {
+    let stats = HunkStats{
+        lang: f_ext.clone(),
+        // mode: String,
+        added: cleaned_hunk.added(),
+        removed: cleaned_hunk.removed(),
+        cleaned_lines: cleaned_hunk.lines().to_vec(),
+    };
+    stats
 }
 
 fn main() -> std::io::Result<()> {
@@ -102,7 +134,7 @@ fn main() -> std::io::Result<()> {
         // loop through all hunks and output hunkstats for each
         for h in f.hunks() {
             let cleaned = clean_hunk(h.clone(), f_ext);
-            // let stats = get_hunk_stats(h, cleaned, f_ext);
+            let stats = get_hunk_stats(h, &cleaned, f_ext);
             // out_stats.push(stats);
         }
     }
