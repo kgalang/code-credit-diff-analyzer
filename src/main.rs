@@ -50,8 +50,11 @@ impl DiffString {
 #[derive(Debug)]
 pub struct HunkStats {
     pub lang: Language,
-    pub added: usize,
-    pub removed: usize,
+    pub raw_added: usize,
+    pub raw_removed: usize,
+    pub raw_lines: Vec<Line>,
+    pub cleaned_added: usize,
+    pub cleaned_removed: usize,
     pub cleaned_lines: Vec<Line>,
 }
 
@@ -114,9 +117,11 @@ fn get_file_lang(file: &PatchedFile) -> &Language {
 fn get_hunk_stats(_raw_hunk: &Hunk, cleaned_hunk: &Hunk, lang: &Language) -> HunkStats {
     HunkStats {
         lang: lang.clone(),
-        // mode: String,
-        added: cleaned_hunk.added(),
-        removed: cleaned_hunk.removed(),
+        raw_added: _raw_hunk.added(),
+        raw_removed: _raw_hunk.removed(),
+        raw_lines: _raw_hunk.lines().to_vec(),
+        cleaned_added: cleaned_hunk.added(),
+        cleaned_removed: cleaned_hunk.removed(),
         cleaned_lines: cleaned_hunk.lines().to_vec(),
     }
 }
@@ -140,6 +145,11 @@ fn main() -> std::io::Result<()> {
         }
     }
 
-    println!("{}", all_stats.len());
+    for s in all_stats {
+        println!("hunk");
+        println!("added: {} -> {}", s.raw_added, s.cleaned_added);
+        println!("removed: {} -> {}", s.raw_removed, s.cleaned_removed);
+    }
+
     Ok(())
 }
