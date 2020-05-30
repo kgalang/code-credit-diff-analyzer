@@ -126,9 +126,7 @@ fn get_hunk_stats(_raw_hunk: &Hunk, cleaned_hunk: &Hunk, lang: &Language) -> Hun
     }
 }
 
-fn main() -> std::io::Result<()> {
-    let diff = DiffString::from_file("./fixtures/rustball.diff")?;
-
+fn analyze_diff(diff: String) -> Vec<HunkStats> {
     let mut patch = PatchSet::new();
     patch.parse(diff).expect("Error parsing diff");
     let files = patch.files();
@@ -144,6 +142,14 @@ fn main() -> std::io::Result<()> {
             all_stats.push(stats);
         }
     }
+
+    all_stats
+}
+
+fn main() -> std::io::Result<()> {
+    let diff = DiffString::from_file("./fixtures/rustball.diff")?;
+
+    let all_stats = analyze_diff(diff);
 
     for s in all_stats {
         println!("hunk");
