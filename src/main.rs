@@ -58,13 +58,13 @@ pub struct HunkStats {
 #[derive(Debug)]
 pub struct DiffStats(pub Vec<HunkStats>);
 
-fn is_not_comment(line: &Line, f_ext: &Language) -> bool {
-    if let Language::Other = f_ext {
+fn is_not_comment(line: &Line, lang: &Language) -> bool {
+    if let Language::Other = lang {
         return true
     }
 
     let trimmed_line = line.value.trim_start();
-    let comm_pre = LANG_COMMENTS.get(f_ext).expect("Not in map");
+    let comm_pre = LANG_COMMENTS.get(lang).expect("Not in map");
     let comm_pre_len = comm_pre.len();
     if trimmed_line.len() < comm_pre_len {
         return true
@@ -77,16 +77,16 @@ fn is_not_comment(line: &Line, f_ext: &Language) -> bool {
     }
 }
 
-fn clean_hunk(raw_hunk: Hunk, f_ext: &Language) -> Hunk{
+fn clean_hunk(raw_hunk: Hunk, lang: &Language) -> Hunk{
     let mut cleaned = Hunk::new(0,0,0,0,"",);
 
-    if let Language::Other = f_ext {
+    if let Language::Other = lang {
         return raw_hunk.clone()
     }
 
     // go through hunk source lines and remove comments here
     let cleaned_lines: Vec<&Line> = raw_hunk.lines().into_iter()
-        .filter(|l| is_not_comment(*l, f_ext)).collect();
+        .filter(|l| is_not_comment(*l, lang)).collect();
 
     for l in cleaned_lines {
         cleaned.append(l.clone());
@@ -95,7 +95,7 @@ fn clean_hunk(raw_hunk: Hunk, f_ext: &Language) -> Hunk{
     cleaned
 }
 
-fn get_file_ext(file: &PatchedFile) -> &Language {
+fn get_file_lang(file: &PatchedFile) -> &Language {
     let mut lang: &Language;
     let f_ext = Path::new(file.target_file.as_str())
         .extension();
@@ -109,9 +109,9 @@ fn get_file_ext(file: &PatchedFile) -> &Language {
     lang
 }
 
-fn get_hunk_stats(raw_hunk: &Hunk, cleaned_hunk: &Hunk, f_ext: &Language) -> HunkStats {
+fn get_hunk_stats(raw_hunk: &Hunk, cleaned_hunk: &Hunk, lang: &Language) -> HunkStats {
     let stats = HunkStats{
-        lang: f_ext.clone(),
+        lang: lang.clone(),
         // mode: String,
         added: cleaned_hunk.added(),
         removed: cleaned_hunk.removed(),
@@ -129,12 +129,12 @@ fn main() -> std::io::Result<()> {
     let mut all_stats: Vec<HunkStats> = Vec::new();
 
     for f in files {
-        let f_ext = get_file_ext(f);
+        let lang = get_file_lang(f);
 
         // loop through all hunks and output hunkstats for each
         for h in f.hunks() {
-            let cleaned = clean_hunk(h.clone(), f_ext);
-            let stats = get_hunk_stats(h, &cleaned, f_ext);
+            let cleaned = clean_hunk(h.clone(), lang);
+            let stats = get_hunk_stats(h, &cleaned, lang);
             all_stats.push(stats);
         }
     }
