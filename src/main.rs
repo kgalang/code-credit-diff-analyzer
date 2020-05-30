@@ -61,17 +61,20 @@ fn is_not_comment(line: &Line, f_ext: Option<&str>) -> bool {
     }
 }
 
-fn clean_hunk(hunk: Hunk, f_ext: Option<&str>) -> Hunk{
+fn clean_hunk(raw_hunk: Hunk, f_ext: Option<&str>) -> Hunk{
+    let mut cleaned = Hunk::new(0,0,0,0,"",);
+
     // go through hunk source lines and remove comments here
-    let cleaned_lines: Vec<&Line> = hunk.lines().into_iter()
+    let cleaned_lines: Vec<&Line> = raw_hunk.lines().into_iter()
         .filter(|l| is_not_comment(*l, f_ext)).collect();
 
-    // print cleaned lines
     for l in cleaned_lines {
-        println!("{:?}", l.value);
+        cleaned.append(l.clone());
     }
 
-    hunk
+    // println!("raw {}", raw_hunk.lines().len());
+    // println!("cleaned {}", cleaned.lines().len());
+    cleaned
 }
 
 fn get_file_ext(file: &PatchedFile) -> Option<&str> {
@@ -92,14 +95,16 @@ fn main() -> std::io::Result<()> {
     patch.parse(diff).ok().expect("Error parsing diff");
     let files = patch.files();
     let mut out_stats: Vec<HunkStats> = Vec::new();
-    let mut cleaned_hunks: Vec<Hunk> = Vec::new();
-    
-    // trim hunks to remove comments from counting for added or removed properties
+
     for f in files {
         let f_ext = get_file_ext(f);
-        let cleaned: Vec<Hunk> = f.clone().into_iter()
-            .map(|h| clean_hunk(h, f_ext)).collect();
-        cleaned_hunks.extend(cleaned);
+
+        // loop through all hunks and output hunkstats for each
+        for h in f.hunks() {
+            let cleaned = clean_hunk(h.clone(), f_ext);
+            // let stats = get_hunk_stats(h, cleaned, f_ext);
+            // out_stats.push(stats);
+        }
     }
 
     Ok(())
