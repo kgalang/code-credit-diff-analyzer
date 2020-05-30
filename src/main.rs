@@ -70,22 +70,18 @@ fn is_not_comment(line: &Line, lang: &Language) -> bool {
         return true
     }
 
-    if &trimmed_line[..comm_pre_len] == *comm_pre {
-        return false
-    } else {
-        return true
-    }
+    &trimmed_line[..comm_pre_len] != *comm_pre
 }
 
-fn clean_hunk(raw_hunk: Hunk, lang: &Language) -> Hunk{
+fn clean_hunk(_raw_hunk: Hunk, lang: &Language) -> Hunk{
     let mut cleaned = Hunk::new(0,0,0,0,"",);
 
     if let Language::Other = lang {
-        return raw_hunk.clone()
+        return _raw_hunk
     }
 
     // go through hunk source lines and remove comments here
-    let cleaned_lines: Vec<&Line> = raw_hunk.lines().into_iter()
+    let cleaned_lines: Vec<&Line> = _raw_hunk.lines().iter()
         .filter(|l| is_not_comment(*l, lang)).collect();
 
     for l in cleaned_lines {
@@ -96,35 +92,40 @@ fn clean_hunk(raw_hunk: Hunk, lang: &Language) -> Hunk{
 }
 
 fn get_file_lang(file: &PatchedFile) -> &Language {
-    let mut lang: &Language;
+    let lang: &Language;
     let f_ext = Path::new(file.target_file.as_str())
         .extension();
     
-    if f_ext.is_none() || !LANG_EXT.contains_key(f_ext.unwrap().to_str().unwrap()) {
-        lang = &Language::Other;
+    if let Some(ext) = f_ext {
+        let ext_str = &ext.to_str().unwrap();
+
+        if LANG_EXT.contains_key(ext_str) {
+            lang = LANG_EXT.get(ext_str).expect("err getting language")
+        } else {
+            lang = &Language::Other;
+        }
     } else {
-        lang = LANG_EXT.get(f_ext.unwrap().to_str().unwrap()).expect("err getting language")
+        lang = &Language::Other;
     }
 
     lang
 }
 
-fn get_hunk_stats(raw_hunk: &Hunk, cleaned_hunk: &Hunk, lang: &Language) -> HunkStats {
-    let stats = HunkStats{
+fn get_hunk_stats(_raw_hunk: &Hunk, cleaned_hunk: &Hunk, lang: &Language) -> HunkStats {
+    HunkStats {
         lang: lang.clone(),
         // mode: String,
         added: cleaned_hunk.added(),
         removed: cleaned_hunk.removed(),
         cleaned_lines: cleaned_hunk.lines().to_vec(),
-    };
-    stats
+    }
 }
 
 fn main() -> std::io::Result<()> {
     let diff = DiffString::from_file("./fixtures/rustball.diff")?;
 
     let mut patch = PatchSet::new();
-    patch.parse(diff).ok().expect("Error parsing diff");
+    patch.parse(diff).expect("Error parsing diff");
     let files = patch.files();
     let mut all_stats: Vec<HunkStats> = Vec::new();
 
