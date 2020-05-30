@@ -4,12 +4,17 @@ use crate::models::{Language, HunkStats};
 use super::{LANG_COMMENTS, LANG_EXT};
 
 
-fn is_not_comment(line: &Line, lang: &Language) -> bool {
+fn is_significant_code(line: &Line, lang: &Language) -> bool {
+    let trimmed_line = line.value.trim_start();
+    // check for blank line
+    if trimmed_line.len() < 1 {
+        return false
+    }
+    
+    // Check for comment
     if let Language::Other = lang {
         return true
     }
-
-    let trimmed_line = line.value.trim_start();
     let comm_pre = LANG_COMMENTS.get(lang).expect("Not in map");
     let comm_pre_len = comm_pre.len();
     if trimmed_line.len() < comm_pre_len {
@@ -28,7 +33,7 @@ fn clean_hunk(_raw_hunk: Hunk, lang: &Language) -> Hunk{
 
     // go through hunk source lines and remove comments here
     let cleaned_lines: Vec<&Line> = _raw_hunk.lines().iter()
-        .filter(|l| is_not_comment(*l, lang)).collect();
+        .filter(|l| is_significant_code(*l, lang)).collect();
 
     for l in cleaned_lines {
         cleaned.append(l.clone());

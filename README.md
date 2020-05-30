@@ -90,6 +90,6 @@ Project Link: [https://github.com/kgalang/code-credit-diff-analyzer](https://git
 
 ## TODO
 - [ ] Account for block comments
-- [ ] Account for whitespace lines
+- [x] Account for whitespace lines
 - [ ] Expose as a python module
 - [ ] Expose as CLI
