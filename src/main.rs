@@ -126,7 +126,7 @@ fn main() -> std::io::Result<()> {
     let mut patch = PatchSet::new();
     patch.parse(diff).ok().expect("Error parsing diff");
     let files = patch.files();
-    let mut out_stats: Vec<HunkStats> = Vec::new();
+    let mut all_stats: Vec<HunkStats> = Vec::new();
 
     for f in files {
         let f_ext = get_file_ext(f);
@@ -135,9 +135,10 @@ fn main() -> std::io::Result<()> {
         for h in f.hunks() {
             let cleaned = clean_hunk(h.clone(), f_ext);
             let stats = get_hunk_stats(h, &cleaned, f_ext);
-            // out_stats.push(stats);
+            all_stats.push(stats);
         }
     }
 
+    println!("{}", all_stats.len());
     Ok(())
 }
