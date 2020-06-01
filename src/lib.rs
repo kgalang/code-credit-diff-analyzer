@@ -8,7 +8,7 @@ mod analyzer;
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 use std::collections::HashMap;
-use models::{Language, DiffString};
+use models::{Language, DiffString, HunkStats};
 use analyzer::{analyze_diff};
 
 lazy_static!{
@@ -33,18 +33,12 @@ lazy_static!{
 
 #[pyfunction]
 /// Formats the sum of two numbers as string
-fn analyze(path_to_file: &str) -> PyResult<String> {
+fn analyze(path_to_file: &str) -> PyResult<Vec<HunkStats>> {
     let diff = DiffString::from_file(path_to_file)?;
 
     let all_stats = analyze_diff(diff);
 
-    for s in all_stats {
-        println!("hunk");
-        println!("added: {} -> {}", s.raw_added, s.cleaned_added);
-        println!("removed: {} -> {}", s.raw_removed, s.cleaned_removed);
-    }
-
-    Ok(path_to_file.to_string())
+    Ok(all_stats)
 }
 
 /// This module is a python module implemented in Rust.

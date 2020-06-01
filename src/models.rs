@@ -1,6 +1,7 @@
 use unidiff::{Line};
 use std::io::prelude::*;
 use std::fs::File;
+use pyo3::prelude::*;
 
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
@@ -24,6 +25,7 @@ impl DiffString {
     // fn from_github
 }
 
+#[pyclass]
 #[derive(Debug)]
 pub struct HunkStats {
     pub lang: Language,
