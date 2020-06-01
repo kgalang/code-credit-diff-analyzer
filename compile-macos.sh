@@ -1,0 +1,1 @@
+cargo rustc --release --lib  -- -C link-arg=-undefined -C link-arg=dynamic_lookup
