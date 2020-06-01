@@ -63,6 +63,15 @@ impl HunkStats {
     }
 
     #[getter]
+    fn raw_lines(&self) -> PyResult<Vec<String>> {
+        let mut res = Vec::new();
+        for line in &self.raw_lines {
+            res.push(line.value.clone());
+        }
+        Ok(res)
+    }
+
+    #[getter]
     fn cleaned_added(&self) -> PyResult<usize> {
         Ok(self.cleaned_added)
     }
@@ -70,6 +79,15 @@ impl HunkStats {
     #[getter]
     fn cleaned_removed(&self) -> PyResult<usize> {
         Ok(self.cleaned_removed)
+    }
+
+    #[getter]
+    fn cleaned_lines(&self) -> PyResult<Vec<String>> {
+        let mut res = Vec::new();
+        for line in &self.cleaned_lines {
+            res.push(line.value.clone());
+        }
+        Ok(res)
     }
 }
 
