@@ -2,7 +2,6 @@ use unidiff::{Line};
 use std::io::prelude::*;
 use std::fs::File;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyTuple};
 use std::fmt;
 
 

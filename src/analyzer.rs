@@ -7,7 +7,7 @@ use super::{LANG_COMMENTS, LANG_EXT};
 fn is_significant_code(line: &Line, lang: &Language) -> bool {
     let trimmed_line = line.value.trim_start();
     // check for blank line
-    if trimmed_line.len() < 1 {
+    if trimmed_line.is_empty() {
         return false
     }
     

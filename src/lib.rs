@@ -43,7 +43,7 @@ fn analyze(path_to_file: &str) -> PyResult<Vec<HunkStats>> {
 
 /// This module is a python module implemented in Rust.
 #[pymodule]
-fn code_credit_diff(py: Python, m: &PyModule) -> PyResult<()> {
+fn code_credit_diff(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_wrapped(wrap_pyfunction!(analyze))?;
 
     Ok(())
