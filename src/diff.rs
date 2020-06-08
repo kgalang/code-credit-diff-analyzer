@@ -1,3 +1,4 @@
+#![allow(warnings)]
 //! Unified diff parsing/metadata extraction library for Rust
 //!
 //! # Examples
@@ -22,15 +23,12 @@
 //!     patch.parse(diff_str).ok().expect("Error parsing diff");
 //! }
 //! ```
-use lazy_static::lazy_static;
 
 use super::{RE_HUNK_BODY_LINE, RE_HUNK_HEADER, RE_SOURCE_FILENAME, RE_TARGET_FILENAME};
 use std::error;
 use std::fmt;
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
-
-use regex::Regex;
 
 /// Diff line is added
 pub const LINE_TYPE_ADDED: &'static str = "+";
