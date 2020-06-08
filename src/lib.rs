@@ -1,17 +1,17 @@
-
 #[macro_use]
 extern crate lazy_static;
 
-mod models;
 mod analyzer;
+mod models;
 
+use analyzer::analyze_diff;
+use models::{DiffString, HunkStats, Language};
 use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
+use regex::Regex;
 use std::collections::HashMap;
-use models::{Language, DiffString, HunkStats};
-use analyzer::{analyze_diff};
 
-lazy_static!{
+lazy_static! {
     static ref LANG_EXT: HashMap<&'static str, Language> = {
         let mut map = HashMap::new();
         map.insert("py", Language::Python);
@@ -28,8 +28,11 @@ lazy_static!{
         map.insert(Language::Rust, "//");
         map
     };
+    static ref RE_SOURCE_FILENAME: Regex = Regex::new(r"^--- (?P<filename>[^\t\n]+)(?:\t(?P<timestamp>[^\n]+))?").unwrap();
+    static ref RE_TARGET_FILENAME: Regex = Regex::new(r"^\+\+\+ (?P<filename>[^\t\n]+)(?:\t(?P<timestamp>[^\n]+))?").unwrap();
+    static ref RE_HUNK_HEADER: Regex = Regex::new(r"^@@ -(?P<source_start>\d+)(?:,(?P<source_length>\d+))? \+(?P<target_start>\d+)(?:,(?P<target_length>\d+))? @@[ ]?(?P<section_header>.*)").unwrap();
+    static ref RE_HUNK_BODY_LINE: Regex = Regex::new(r"^(?P<line_type>[- \n\+\\]?)(?P<value>.*)").unwrap();
 }
-
 
 #[pyfunction]
 /// Formats the sum of two numbers as string
