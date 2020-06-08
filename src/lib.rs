@@ -2,6 +2,7 @@
 extern crate lazy_static;
 
 mod analyzer;
+mod diff;
 mod models;
 
 use analyzer::analyze_diff;

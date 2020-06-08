@@ -24,11 +24,11 @@
 //! ```
 use lazy_static::lazy_static;
 
+use super::{RE_HUNK_BODY_LINE, RE_HUNK_HEADER, RE_SOURCE_FILENAME, RE_TARGET_FILENAME};
 use std::error;
 use std::fmt;
 use std::ops::{Index, IndexMut};
 use std::str::FromStr;
-use super::{RE_SOURCE_FILENAME, RE_TARGET_FILENAME, RE_HUNK_HEADER, RE_HUNK_BODY_LINE};
 
 use regex::Regex;
 
@@ -737,4 +737,3 @@ impl FromStr for PatchSet {
         Ok(patch)
     }
 }
-© 2020 GitHub, Inc.

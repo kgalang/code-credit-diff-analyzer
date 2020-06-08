@@ -1,9 +1,8 @@
-use unidiff::{Line};
-use std::io::prelude::*;
-use std::fs::File;
+use crate::diff::Line;
 use pyo3::prelude::*;
 use std::fmt;
-
+use std::fs::File;
+use std::io::prelude::*;
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub enum Language {

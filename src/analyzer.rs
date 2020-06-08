@@ -1,39 +1,41 @@
-use unidiff::{PatchSet, PatchedFile, Hunk, Line};
-use std::path::Path;
-use crate::models::{Language, HunkStats};
 use super::{LANG_COMMENTS, LANG_EXT};
-
+use crate::diff::{Hunk, Line, PatchSet, PatchedFile};
+use crate::models::{HunkStats, Language};
+use std::path::Path;
 
 fn is_significant_code(line: &Line, lang: &Language) -> bool {
     let trimmed_line = line.value.trim_start();
     // check for blank line
     if trimmed_line.is_empty() {
-        return false
+        return false;
     }
-    
+
     // Check for comment
     if let Language::Other = lang {
-        return true
+        return true;
     }
     let comm_pre = LANG_COMMENTS.get(lang).expect("Not in map");
     let comm_pre_len = comm_pre.len();
     if trimmed_line.len() < comm_pre_len {
-        return true
+        return true;
     }
 
     &trimmed_line[..comm_pre_len] != *comm_pre
 }
 
-fn clean_hunk(_raw_hunk: Hunk, lang: &Language) -> Hunk{
-    let mut cleaned = Hunk::new(0,0,0,0,"",);
+fn clean_hunk(_raw_hunk: Hunk, lang: &Language) -> Hunk {
+    let mut cleaned = Hunk::new(0, 0, 0, 0, "");
 
     if let Language::Other = lang {
-        return _raw_hunk
+        return _raw_hunk;
     }
 
     // go through hunk source lines and remove comments here
-    let cleaned_lines: Vec<&Line> = _raw_hunk.lines().iter()
-        .filter(|l| is_significant_code(*l, lang)).collect();
+    let cleaned_lines: Vec<&Line> = _raw_hunk
+        .lines()
+        .iter()
+        .filter(|l| is_significant_code(*l, lang))
+        .collect();
 
     for l in cleaned_lines {
         cleaned.append(l.clone());
@@ -44,9 +46,8 @@ fn clean_hunk(_raw_hunk: Hunk, lang: &Language) -> Hunk{
 
 fn get_file_lang(file: &PatchedFile) -> &Language {
     let lang: &Language;
-    let f_ext = Path::new(file.target_file.as_str())
-        .extension();
-    
+    let f_ext = Path::new(file.target_file.as_str()).extension();
+
     if let Some(ext) = f_ext {
         let ext_str = &ext.to_str().unwrap();
 
